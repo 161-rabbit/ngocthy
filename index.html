@@ -2,6 +2,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap">
 <style>
   /* Layout: full-screen intro overlay (typed title that zooms) over a warm celebratory main page */
   :root {
@@ -16,8 +19,8 @@
     --intro-bg: #140a1f;
     --intro-fg: #fff4fb;
     --display: "Pacifico", "Segoe Script", cursive;
-    --head: "Fredoka", "Segoe UI", sans-serif;
-    --body: "Quicksand", "Segoe UI", sans-serif;
+    --head: "Baloo 2", "Segoe UI", system-ui, sans-serif;
+    --body: "Quicksand", "Segoe UI", system-ui, sans-serif;
     color-scheme: light;
   }
   /* Luôn nền sáng (hồng pastel), không đổi theo thiết bị */
@@ -922,7 +925,7 @@
   const bgm = new Audio();
   bgm.preload = "auto";
   bgm.volume = 0.75;
-  function playTrack(i) {
+  function loadTrack(i) {
     mi = ((i % PLAYLIST.length) + PLAYLIST.length) % PLAYLIST.length;
     const tr = PLAYLIST[mi];
     bgm.src = tr.src;
@@ -934,15 +937,23 @@
     else bgm.addEventListener("loadedmetadata", seekPlay, { once: true });
     bgm.load();
   }
+  // Lặp lại chính bài đang phát (không chuyển bài)
+  function loopBack() {
+    const tr = PLAYLIST[mi];
+    if (!tr) return;
+    try { bgm.currentTime = tr.start; } catch (e) {}
+    bgm.play().catch(() => {});
+  }
   bgm.addEventListener("timeupdate", () => {
     const tr = PLAYLIST[mi];
-    if (tr && bgm.currentTime >= tr.end) playTrack(mi + 1);
+    if (tr && bgm.currentTime >= tr.end) loopBack();
   });
-  bgm.addEventListener("ended", () => playTrack(mi + 1));
+  bgm.addEventListener("ended", loopBack);
   const musicToggle = document.getElementById("music-toggle");
   function startMusic() {
     musicToggle.classList.add("show");
-    playTrack(0);
+    mi = Math.floor(Math.random() * PLAYLIST.length); // mỗi lần mở chọn ngẫu nhiên 1 bài
+    loadTrack(mi);
   }
   musicToggle.addEventListener("click", () => {
     bgm.muted = !bgm.muted;
