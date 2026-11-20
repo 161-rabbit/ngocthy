@@ -659,6 +659,11 @@
 <script>
   const TITLE = "Happy Birthday";
 
+  // Luôn mở ở đầu trang (không khôi phục vị trí cuộn cũ khi load lại)
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  window.scrollTo(0, 0);
+  window.addEventListener("load", () => window.scrollTo(0, 0));
+
   /* ===== CẤU HÌNH: ngày / tháng sinh nhật (dãy số sẽ lăn tới) ===== */
   const BD_DAY = 21;    // ngày
   const BD_MONTH = 11;  // tháng
