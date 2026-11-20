@@ -523,8 +523,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .cake, .balloon, .flame, .scroll-cue { animation: none; }
-    #typed { animation: none; }
+    .scroll-cue { animation: none; }
     .grid .cell:hover { transform: none; }
   }
 </style>
@@ -892,9 +891,8 @@
     cake.classList.add("on");
     let t = 450;
     head.forEach(el => { setTimeout(() => el && el.classList.add("on"), t); t += 340; });
-    // thổi nến
-    setTimeout(() => { cake.classList.add("blown"); whoosh(); }, t + 250);
-    let t2 = t + 850;
+    // nến để cháy (không thổi tắt)
+    let t2 = t + 400;
     rest.forEach(el => { setTimeout(() => el && el.classList.add("on"), t2); t2 += 380; });
   }
 
@@ -984,7 +982,6 @@
   addEventListener("resize", resize);
 
   function fireConfetti() {
-    if (reduce) return;
     for (let i = 0; i < 160; i++) {
       pieces.push({
         x: Math.random() * canvas.width,
