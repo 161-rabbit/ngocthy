@@ -377,6 +377,22 @@
     pointer-events: none;
   }
 
+  /* Nút bật/tắt nhạc nền */
+  #music-toggle {
+    position: fixed; z-index: 45;
+    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    right: max(16px, env(safe-area-inset-right, 0px));
+    width: 50px; height: 50px; border-radius: 50%;
+    border: none; cursor: pointer; font-size: 1.4rem;
+    background: rgba(255,255,255,.9); color: #c0407f;
+    box-shadow: 0 6px 18px rgba(180,70,120,.3);
+    display: none; align-items: center; justify-content: center;
+    transition: transform .15s ease;
+  }
+  #music-toggle.show { display: flex; }
+  #music-toggle:hover { transform: scale(1.08); }
+  #music-toggle:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
   /* ---------- Album gallery ---------- */
   .album {
     width: 100%;
@@ -534,6 +550,7 @@
 
 <div class="balloons" id="balloons" aria-hidden="true"></div>
 <canvas id="confetti" aria-hidden="true"></canvas>
+<button id="music-toggle" type="button" aria-label="Bật/tắt nhạc">🔊</button>
 
 <main>
   <svg class="cake ri" viewBox="0 0 240 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bánh sinh nhật">
@@ -846,7 +863,6 @@
     intro.classList.add("done");
     document.body.classList.add("revealed");
     fireConfetti();
-    playBirthday();
     runReveal();
     setTimeout(() => intro.remove(), 1000);
   }
@@ -885,11 +901,48 @@
 
   /* ========= Khởi động (cần chạm để có âm thanh) ========= */
   function beginSequence() {
-    initAudio();           // mở khoá âm thanh ngay khi chạm (luật trình duyệt)
+    initAudio();           // mở khoá hiệu ứng tiếng (bánh răng, gõ gỗ)
+    startMusic();          // nhạc nền từ 2 bản mp3
     switchStage("odo");
     setTimeout(rollOdometer, 400);
   }
   document.getElementById("start-btn").addEventListener("click", beginSequence);
+
+  /* ===== Nhạc nền: cắt đoạn, phát nối tiếp và lặp lại ===== */
+  const PLAYLIST = [
+    { src: "15115.mp3", start: 15, end: 75 },   // giây 15 -> 1:15
+    { src: "25140.mp3", start: 25, end: 100 }   // giây 25 -> 1:40
+  ];
+  let mi = 0;
+  const bgm = new Audio();
+  bgm.preload = "auto";
+  bgm.volume = 0.75;
+  function playTrack(i) {
+    mi = ((i % PLAYLIST.length) + PLAYLIST.length) % PLAYLIST.length;
+    const tr = PLAYLIST[mi];
+    bgm.src = tr.src;
+    const seekPlay = () => {
+      try { bgm.currentTime = tr.start; } catch (e) {}
+      bgm.play().catch(() => {});
+    };
+    if (bgm.readyState >= 1) seekPlay();
+    else bgm.addEventListener("loadedmetadata", seekPlay, { once: true });
+    bgm.load();
+  }
+  bgm.addEventListener("timeupdate", () => {
+    const tr = PLAYLIST[mi];
+    if (tr && bgm.currentTime >= tr.end) playTrack(mi + 1);
+  });
+  bgm.addEventListener("ended", () => playTrack(mi + 1));
+  const musicToggle = document.getElementById("music-toggle");
+  function startMusic() {
+    musicToggle.classList.add("show");
+    playTrack(0);
+  }
+  musicToggle.addEventListener("click", () => {
+    bgm.muted = !bgm.muted;
+    musicToggle.textContent = bgm.muted ? "🔇" : "🔊";
+  });
 
   /* ---------- Balloons ---------- */
   const colors = ["#ff5fa2", "#ffb347", "#8e6bff", "#4fc3f7", "#ff6f91", "#f6c453"];
