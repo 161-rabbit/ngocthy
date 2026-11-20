@@ -64,6 +64,7 @@
     color: var(--intro-fg);
     text-align: center;
     padding: 24px;
+    overflow: hidden;
     transition: opacity .9s ease, transform .9s ease, visibility .9s;
   }
   #intro.done {
@@ -72,15 +73,69 @@
     transform: scale(1.15);
     pointer-events: none;
   }
-  #intro .eyebrow {
-    font-family: var(--head);
-    letter-spacing: .5em;
-    text-transform: uppercase;
-    font-size: clamp(.6rem, 2.5vw, .85rem);
-    color: #ffd9ec;
-    opacity: 0;
-    animation: fadeUp .8s ease 2.4s forwards;
+
+  /* stages */
+  .stage { display: none; flex-direction: column; align-items: center; gap: 22px; }
+  .stage.active { display: flex; }
+
+  /* stage: start */
+  .start-emoji { font-size: clamp(3rem, 14vw, 4.5rem); animation: float 3s ease-in-out infinite; }
+  .start-hint {
+    font-family: var(--head); letter-spacing: .4em; text-transform: uppercase;
+    font-size: clamp(.6rem, 2.5vw, .8rem); color: #ffd9ec;
   }
+  #start-btn {
+    font-family: var(--head); font-weight: 600; font-size: 1.05rem;
+    color: #2a1540; cursor: pointer; border: none;
+    padding: 16px 38px; border-radius: 999px;
+    background: linear-gradient(120deg, #ffd27a, #ff9ec6);
+    box-shadow: 0 12px 30px rgba(255,150,200,.4);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  #start-btn:focus-visible { outline: 3px solid #ffd27a; outline-offset: 3px; }
+  @keyframes pulse { 50% { transform: scale(1.06); } }
+
+  /* stage: odometer */
+  #odo-label {
+    font-family: var(--head); letter-spacing: .4em; text-transform: uppercase;
+    font-size: clamp(.6rem, 2.5vw, .8rem); color: #ffd9ec;
+  }
+  .odo { display: flex; align-items: center; gap: 6px; }
+  .reel {
+    width: clamp(44px, 13vw, 70px);
+    height: clamp(66px, 20vw, 104px);
+    overflow: hidden; border-radius: 12px; position: relative;
+    background: linear-gradient(#20112f, #3a1f52);
+    box-shadow: inset 0 9px 14px rgba(0,0,0,.55), inset 0 -9px 14px rgba(0,0,0,.55), 0 4px 12px rgba(0,0,0,.35);
+  }
+  .reel::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 12px;
+    background: linear-gradient(rgba(0,0,0,.55) 0%, transparent 30%, transparent 70%, rgba(0,0,0,.55) 100%);
+  }
+  .reel .strip { display: flex; flex-direction: column; will-change: transform; }
+  .reel .strip span {
+    height: clamp(66px, 20vw, 104px);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--head); font-weight: 700; font-variant-numeric: tabular-nums;
+    font-size: clamp(2rem, 9vw, 3.3rem);
+    color: #ffd27a; text-shadow: 0 2px 7px rgba(0,0,0,.45);
+  }
+  .odo-sep { font-family: var(--head); font-weight: 700; color: #ff8fc0; font-size: clamp(1.6rem, 7vw, 2.6rem); }
+
+  /* opening flash */
+  #intro.flash::before {
+    content: ""; position: absolute; inset: 0; background: #fff;
+    animation: flash .5s ease-out; pointer-events: none;
+  }
+  @keyframes flash { from { opacity: .85; } to { opacity: 0; } }
+
+  /* stage: typed */
+  .typed-eyebrow {
+    font-family: var(--head); letter-spacing: .5em; text-transform: uppercase;
+    font-size: clamp(.6rem, 2.5vw, .85rem); color: #ffd9ec;
+    opacity: 0; transition: opacity .6s ease;
+  }
+  .typed-eyebrow.on { opacity: 1; }
   #typed {
     font-family: var(--display);
     font-size: clamp(2.4rem, 11vw, 6rem);
@@ -92,8 +147,8 @@
     color: transparent;
     filter: drop-shadow(0 0 18px rgba(255,120,180,.45));
     transform-origin: center;
-    animation: pop 1s ease 2.6s both;
   }
+  #typed.pop { animation: pop 1s ease both; }
   #typed .caret {
     -webkit-text-fill-color: #ffd27a;
     color: #ffd27a;
@@ -106,10 +161,6 @@
     100% { transform: scale(1.1); }
   }
   @keyframes blink { 50% { opacity: 0; } }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(14px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
   /* sparkles inside intro */
   .spark {
     position: absolute;
@@ -138,6 +189,23 @@
   body.revealed main { opacity: 1; }
   /* Khoá cuộn trong lúc intro chạy, chỉ cho cuộn sau khi hiện xong */
   body:not(.revealed) { overflow: hidden; height: 100%; }
+
+  /* Reveal lần lượt */
+  .ri { opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
+  .ri.on { opacity: 1; transform: none; }
+
+  /* Thổi nến: tắt lửa + khói bay lên */
+  .cake .flames { transition: opacity .45s ease; }
+  .cake.blown .flames { opacity: 0; }
+  .cake .smoke { opacity: 0; }
+  .cake .smoke circle { transform-box: fill-box; transform-origin: center; }
+  .cake.blown .smoke circle { animation: smoke 1.8s ease-out forwards; }
+  .cake.blown .smoke circle:nth-child(2) { animation-delay: .12s; }
+  .cake.blown .smoke circle:nth-child(3) { animation-delay: .24s; }
+  @keyframes smoke {
+    0%   { opacity: .75; transform: translateY(0) scale(1); }
+    100% { opacity: 0;   transform: translateY(-30px) scale(1.8); }
+  }
 
   .hero {
     text-align: center;
@@ -457,15 +525,32 @@
 </style>
 
 <div id="intro" role="dialog" aria-label="Mở đầu">
-  <div class="eyebrow">Một lời chúc nhỏ dành cho bạn</div>
-  <div id="typed"><span class="caret">|</span></div>
+  <div class="stage active" id="stage-start">
+    <div class="start-emoji">🎂</div>
+    <div class="start-hint">Có âm thanh · Mở loa nhé</div>
+    <button id="start-btn" type="button">Chạm để bắt đầu 🔊</button>
+  </div>
+  <div class="stage" id="stage-odo">
+    <div id="odo-label">Ngày đặc biệt</div>
+    <div class="odo">
+      <div class="reel"><div class="strip"></div></div>
+      <div class="reel"><div class="strip"></div></div>
+      <div class="odo-sep">/</div>
+      <div class="reel"><div class="strip"></div></div>
+      <div class="reel"><div class="strip"></div></div>
+    </div>
+  </div>
+  <div class="stage" id="stage-typed">
+    <div class="typed-eyebrow">Một lời chúc nhỏ dành cho bạn</div>
+    <div id="typed"><span class="caret">|</span></div>
+  </div>
 </div>
 
 <div class="balloons" id="balloons" aria-hidden="true"></div>
 <canvas id="confetti" aria-hidden="true"></canvas>
 
 <main>
-  <svg class="cake" viewBox="0 0 240 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bánh sinh nhật">
+  <svg class="cake ri" viewBox="0 0 240 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bánh sinh nhật">
     <defs>
       <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9d6e6"/>
@@ -506,7 +591,7 @@
       <rect x="138" y="58" width="7" height="30" fill="#ffffff" opacity=".25"/>
     </g>
     <!-- flames -->
-    <g>
+    <g class="flames">
       <circle cx="99.5" cy="52" r="11" fill="url(#glow)"/>
       <path class="flame" d="M99.5 44 q6 6 0 14 q-6 -8 0 -14 Z" fill="#ffb347"/>
       <path class="flame" d="M99.5 47 q3 4 0 9 q-3 -5 0 -9 Z" fill="#fff3b0"/>
@@ -517,25 +602,31 @@
       <path class="flame" d="M141.5 44 q6 6 0 14 q-6 -8 0 -14 Z" fill="#ffb347"/>
       <path class="flame" d="M141.5 47 q3 4 0 9 q-3 -5 0 -9 Z" fill="#fff3b0"/>
     </g>
+    <!-- smoke (hiện khi thổi nến) -->
+    <g class="smoke" fill="#cbb8d8">
+      <circle cx="99.5" cy="46" r="4.5"/>
+      <circle cx="120.5" cy="40" r="4.5"/>
+      <circle cx="141.5" cy="46" r="4.5"/>
+    </g>
   </svg>
   <div class="hero">
-    <div class="label">Happy Birthday</div>
-    <h1>Chúc Mừng Sinh Nhật</h1>
-    <div class="name" id="name">Gửi người đặc biệt</div>
+    <div class="label ri">Happy Birthday</div>
+    <h1 class="ri">Chúc Mừng Sinh Nhật</h1>
+    <div class="name ri" id="name">Gửi người đặc biệt</div>
   </div>
 
-  <div class="card">
+  <div class="card ri">
     <h2>Gửi lời chúc 💌</h2>
     <p>Chúc bạn một tuổi mới thật nhiều sức khoẻ, luôn vui vẻ và rạng rỡ như hôm nay. Mong mọi điều bạn ước đều thành sự thật, và mỗi ngày đều có thật nhiều điều đáng để mỉm cười.</p>
     <p>Cảm ơn vì đã luôn là chính bạn — ấm áp, dễ thương và tuyệt vời. 🎈</p>
     <div class="sign">— Thương mến ✨</div>
   </div>
 
-  <button class="btn" id="again">🎉 Bắn pháo giấy lần nữa</button>
+  <button class="btn ri" id="again">🎉 Bắn pháo giấy lần nữa</button>
 
-  <div class="scroll-cue" aria-hidden="true">Kéo xuống<span>↓</span></div>
+  <div class="scroll-cue ri" aria-hidden="true">Kéo xuống<span>↓</span></div>
 
-  <div class="photo-wrap">
+  <div class="photo-wrap ri">
     <div class="kicker">Khoảnh khắc đáng nhớ</div>
     <figure class="polaroid">
       <div class="frame">
@@ -545,7 +636,7 @@
     </figure>
   </div>
 
-  <section class="album" aria-label="Album ảnh">
+  <section class="album ri" aria-label="Album ảnh">
     <div class="album-head">
       <h2>Album Kỷ Niệm</h2>
       <p>Những khoảnh khắc đáng nhớ 💞</p>
@@ -565,27 +656,150 @@
 <script>
   const TITLE = "Happy Birthday";
 
-  /* ---------- Typing intro ---------- */
+  /* ===== CẤU HÌNH: ngày / tháng sinh nhật (dãy số sẽ lăn tới) ===== */
+  const BD_DAY = 20;    // ngày
+  const BD_MONTH = 11;  // tháng
+
+  const intro = document.getElementById("intro");
   const typed = document.getElementById("typed");
   const caret = typed.querySelector(".caret");
-  const intro = document.getElementById("intro");
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function typeTitle(i = 0) {
-    if (i <= TITLE.length) {
-      caret.insertAdjacentText("beforebegin", "");
-      typed.textContent = TITLE.slice(0, i);
-      typed.appendChild(caret);
-      setTimeout(() => typeTitle(i + 1), 150);
-    } else {
-      typed.classList.add("finished");
-      spawnSparkles();
-      setTimeout(endIntro, 1700);
-    }
+  const stages = {
+    start: document.getElementById("stage-start"),
+    odo: document.getElementById("stage-odo"),
+    typed: document.getElementById("stage-typed")
+  };
+  function switchStage(name) {
+    Object.values(stages).forEach(s => s.classList.remove("active"));
+    stages[name].classList.add("active");
+  }
+
+  /* ========= Web Audio (tự tạo âm thanh, không cần file ngoài) ========= */
+  let AC = null;
+  function initAudio() {
+    try {
+      if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+      if (AC.state === "suspended") AC.resume();
+    } catch (e) { AC = null; }
+  }
+  function blip(freq, dur, type, vol) {
+    if (!AC) return;
+    const t = AC.currentTime;
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type || "square"; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol || 0.05, t + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(AC.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+  function gearTick() { blip(130 + Math.random() * 50, 0.03, "square", 0.045); }
+  function typeTick() { blip(620 + Math.random() * 140, 0.022, "square", 0.04); }
+  function sparkleChime() {
+    [880, 1175, 1568].forEach((f, i) => setTimeout(() => blip(f, 0.18, "triangle", 0.06), i * 70));
+  }
+  function whoosh() {
+    if (!AC) return;
+    const t = AC.currentTime, dur = 0.55;
+    const buf = AC.createBuffer(1, Math.floor(AC.sampleRate * dur), AC.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    const s = AC.createBufferSource(); s.buffer = buf;
+    const f = AC.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 850;
+    const g = AC.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.28, t + 0.08);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(f).connect(g).connect(AC.destination);
+    s.start(t); s.stop(t + dur);
+  }
+  function note(freq, start, dur, vol) {
+    if (!AC) return;
+    const t = AC.currentTime + start;
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = "triangle"; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol || 0.13, t + 0.03);
+    g.gain.setValueAtTime(vol || 0.13, t + dur * 0.7);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(AC.destination);
+    o.start(t); o.stop(t + dur + 0.03);
+  }
+  function playBirthday() {
+    if (!AC) return;
+    const G4 = 392, A4 = 440, B4 = 493.88, C5 = 523.25, D5 = 587.33, E5 = 659.25, F5 = 698.46, G5 = 783.99;
+    const mel = [
+      [G4, .75], [G4, .25], [A4, 1], [G4, 1], [C5, 1], [B4, 2],
+      [G4, .75], [G4, .25], [A4, 1], [G4, 1], [D5, 1], [C5, 2],
+      [G4, .75], [G4, .25], [G5, 1], [E5, 1], [C5, 1], [B4, 1], [A4, 2],
+      [F5, .75], [F5, .25], [E5, 1], [C5, 1], [D5, 1], [C5, 2]
+    ];
+    const beat = 0.42;
+    let tc = 0.1;
+    mel.forEach(([f, b]) => { note(f, tc, b * beat * 0.96); tc += b * beat; });
+  }
+
+  /* ========= Màn 1: dãy số lăn (odometer) ========= */
+  let gearTimer = null;
+  function rollOdometer() {
+    const dd = String(BD_DAY).padStart(2, "0");
+    const mm = String(BD_MONTH).padStart(2, "0");
+    const targets = [+dd[0], +dd[1], +mm[0], +mm[1]];
+    const reels = [...document.querySelectorAll("#stage-odo .reel")];
+    const loops = 4;
+    let maxEnd = 0;
+    reels.forEach((reel, idx) => {
+      const strip = reel.querySelector(".strip");
+      strip.innerHTML = "";
+      const seq = [];
+      for (let l = 0; l < loops; l++) for (let n = 0; n < 10; n++) seq.push(n);
+      seq.push(targets[idx]);
+      seq.forEach(n => { const s = document.createElement("span"); s.textContent = n; strip.appendChild(s); });
+      const cellH = reel.clientHeight;
+      const finalIndex = loops * 10 + targets[idx];
+      const dur = 1.7 + idx * 0.5;
+      maxEnd = Math.max(maxEnd, dur);
+      strip.style.transition = "none";
+      strip.style.transform = "translateY(0)";
+      void strip.offsetHeight;
+      strip.style.transition = "transform " + dur + "s cubic-bezier(.13,.7,.2,1)";
+      strip.style.transform = "translateY(" + (-finalIndex * cellH) + "px)";
+    });
+    gearTimer = setInterval(gearTick, 70);
+    setTimeout(() => { clearInterval(gearTimer); gearTick(); openOdometer(); }, (maxEnd + 0.35) * 1000);
+  }
+
+  function openOdometer() {
+    intro.classList.add("flash");
+    sparkleChime();
+    setTimeout(() => intro.classList.remove("flash"), 500);
+    stages.odo.style.transition = "transform .55s ease, opacity .55s ease";
+    stages.odo.style.transform = "scale(1.45)";
+    stages.odo.style.opacity = "0";
+    setTimeout(() => { switchStage("typed"); startTyping(); }, 520);
+  }
+
+  /* ========= Màn 2: gõ chữ ========= */
+  function startTyping() {
+    document.querySelector(".typed-eyebrow").classList.add("on");
+    let i = 0;
+    (function step() {
+      if (i <= TITLE.length) {
+        typed.textContent = TITLE.slice(0, i);
+        typed.appendChild(caret);
+        if (i > 0 && TITLE[i - 1] !== " ") typeTick();
+        i++;
+        setTimeout(step, 145);
+      } else {
+        typed.classList.add("finished", "pop");
+        spawnSparkles();
+        setTimeout(endIntro, 1500);
+      }
+    })();
   }
 
   function spawnSparkles() {
-    if (reduce) return;
     for (let i = 0; i < 16; i++) {
       const s = document.createElement("div");
       s.className = "spark";
@@ -605,20 +819,62 @@
     }
   }
 
+  /* ========= Mở ra trang chính + nhạc + thổi nến + hiện lần lượt ========= */
   function endIntro() {
     intro.classList.add("done");
     document.body.classList.add("revealed");
     fireConfetti();
+    playBirthday();
+    runReveal();
     setTimeout(() => intro.remove(), 1000);
   }
 
-  if (reduce) {
-    typed.textContent = TITLE;
-    typed.classList.add("finished");
-    setTimeout(endIntro, 600);
-  } else {
-    setTimeout(() => typeTitle(0), 500);
+  function runReveal() {
+    const cake = document.querySelector(".cake");
+    const head = [
+      document.querySelector(".hero .label"),
+      document.querySelector(".hero h1"),
+      document.querySelector(".hero .name")
+    ];
+    const rest = [
+      document.querySelector(".card"),
+      document.getElementById("again"),
+      document.querySelector(".scroll-cue"),
+      document.querySelector(".photo-wrap"),
+      document.querySelector(".album")
+    ];
+    cake.classList.add("on");
+    let t = 450;
+    head.forEach(el => { setTimeout(() => el && el.classList.add("on"), t); t += 340; });
+    // thổi nến
+    setTimeout(() => { cake.classList.add("blown"); whoosh(); }, t + 250);
+    let t2 = t + 850;
+    rest.forEach(el => { setTimeout(() => el && el.classList.add("on"), t2); t2 += 380; });
   }
+
+  function revealAllInstant() {
+    document.querySelectorAll(".ri").forEach(el => el.classList.add("on"));
+    const cake = document.querySelector(".cake");
+    if (cake) cake.classList.add("blown");
+    document.body.classList.add("revealed");
+    intro.classList.add("done");
+    setTimeout(() => intro.remove(), 400);
+  }
+
+  /* ========= Khởi động (cần chạm để có âm thanh) ========= */
+  function beginSequence() {
+    initAudio();
+    if (reduce) {
+      typed.textContent = TITLE;
+      playBirthday();
+      fireConfetti();
+      revealAllInstant();
+      return;
+    }
+    switchStage("odo");
+    setTimeout(rollOdometer, 350);
+  }
+  document.getElementById("start-btn").addEventListener("click", beginSequence);
 
   /* ---------- Balloons ---------- */
   const colors = ["#ff5fa2", "#ffb347", "#8e6bff", "#4fc3f7", "#ff6f91", "#f6c453"];
