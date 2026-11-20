@@ -16,25 +16,9 @@
     --display: "Pacifico", "Segoe Script", cursive;
     --head: "Fredoka", "Segoe UI", sans-serif;
     --body: "Quicksand", "Segoe UI", sans-serif;
+    color-scheme: light;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #1a1020;
-      --bg-2: #241530;
-      --fg: #f6e9f3;
-      --muted: #c6a9c2;
-      --card: #271633;
-      color-scheme: dark;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #1a1020;
-    --bg-2: #241530;
-    --fg: #f6e9f3;
-    --muted: #c6a9c2;
-    --card: #271633;
-    color-scheme: dark;
-  }
+  /* Luôn nền sáng (hồng pastel), không đổi theo thiết bị */
 
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -525,12 +509,7 @@
 </style>
 
 <div id="intro" role="dialog" aria-label="Mở đầu">
-  <div class="stage active" id="stage-start">
-    <div class="start-emoji">🎂</div>
-    <div class="start-hint">Có âm thanh · Mở loa nhé</div>
-    <button id="start-btn" type="button">Chạm để bắt đầu 🔊</button>
-  </div>
-  <div class="stage" id="stage-odo">
+  <div class="stage active" id="stage-odo">
     <div id="odo-label">Ngày đặc biệt</div>
     <div class="odo">
       <div class="reel"><div class="strip"></div></div>
@@ -666,7 +645,6 @@
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const stages = {
-    start: document.getElementById("stage-start"),
     odo: document.getElementById("stage-odo"),
     typed: document.getElementById("stage-typed")
   };
@@ -863,18 +841,17 @@
 
   /* ========= Khởi động (cần chạm để có âm thanh) ========= */
   function beginSequence() {
-    initAudio();
-    if (reduce) {
-      typed.textContent = TITLE;
-      playBirthday();
-      fireConfetti();
-      revealAllInstant();
-      return;
-    }
     switchStage("odo");
-    setTimeout(rollOdometer, 350);
+    setTimeout(rollOdometer, 400);
   }
-  document.getElementById("start-btn").addEventListener("click", beginSequence);
+  // Mở khoá âm thanh ở lần chạm / bấm phím đầu tiên (luật trình duyệt)
+  function unlockAudio() { initAudio(); }
+  ["pointerdown", "touchstart", "keydown"].forEach(ev =>
+    window.addEventListener(ev, unlockAudio, { once: true, passive: true })
+  );
+  // Tự chạy animation ngay khi mở trang
+  if (document.readyState === "complete") setTimeout(beginSequence, 300);
+  else window.addEventListener("load", () => setTimeout(beginSequence, 300));
 
   /* ---------- Balloons ---------- */
   const colors = ["#ff5fa2", "#ffb347", "#8e6bff", "#4fc3f7", "#ff6f91", "#f6c453"];
